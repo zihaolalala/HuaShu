@@ -2,7 +2,7 @@
 # @Time   : 2020/7/23 9:21
 # @Author : zihaolalala
 # @Email  : zihaolalala@163.com
-# @File   : wpqk_dataloader.py
+# @File   : dataloader_jianshu.py
 # @Desc   : 
 
 from knowledge_graph.data_management.data_loader import DataLoader
@@ -29,11 +29,12 @@ from tqdm import tqdm
 
 class JianShuDataLoader(DataLoader):
 
-    def __init__(self):
+    def __init__(self, work_dir):
         super().__init__()
-        self.data_file = '../data/jianshu_data.pkl'
+        self.word_dir = work_dir
+        self.data_file = os.path.join(work_dir, 'jianshu/data.pkl')
 
-    def get_data(self, keywords):
+    def get_url_articl(self, keywords, pages=100):
         log_print('Geting urls from JianShu...')
         # self.url_dict: keyword-[urls]
         base_url = 'https://www.jianshu.com/search?q={}&page={}&type=note'
@@ -49,7 +50,7 @@ class JianShuDataLoader(DataLoader):
                     for node in node_list:
                         tmp1 = node.find_element_by_css_selector('a.title')
                         tmp2 = node.find_element_by_css_selector('p.abstract')
-                        if DataLoader.FILTER.auto_filtering(tmp1.text, tmp2.text):
+                        if DataLoader.FILTER.filter_when_getting(keyword, tmp1.text, tmp2.text):
                             urls.append(tmp1.get_attribute('href'))
                             titles.append(tmp1.text)
                             absts.append(tmp2.text)
@@ -93,12 +94,12 @@ class JianShuDataLoader(DataLoader):
                     return []
                 result = [title.text, int(read_nums.text.replace(',', '').split(' ')[-1]),
                           int(like.text.replace(',', '')[:-3]), art_time.text, [], '', article.text,
-                          jieba.lcut(article.text)]
+                          None]
             return result
 
         for i, keyword in enumerate(keywords):
             self.url_dict[keyword] = set()
-            for page in range(1, 3):
+            for page in range(1, pages):
                 log_print('keyword:{}, Searching page:{}...'.format(keyword, page))
                 url = base_url.format(urllib.parse.quote(keyword), page)
                 # 发送请求
@@ -108,11 +109,13 @@ class JianShuDataLoader(DataLoader):
                 # 获取当前页文章
                 urls, titles, absts = get_absts_page()
                 for url, title, abst in zip(urls, titles, absts):
-                    if url not in self.url_dict[keyword]:
+                    if url not in self.article_dict.keys():
                         result = get_article(url)
-                        result[-3] = abst
+                        if len(result) > 0:
+                            # result[-3] = abst
+                            self.article_dict[url] = result
+                    if (url in self.article_dict) and (url not in self.url_dict[keyword]):
                         self.url_dict[keyword].add(url)
-                        self.article_dict[url] = result
                 if len(urls) < 10:
                     break
-        self.save_data()
+        self.save_url_articl()

@@ -5,10 +5,18 @@
 # @File   : data_filter.py
 # @Desc   : 
 
+
 class DataFilter:
 
-    def auto_filtering(self, title, abstract):
+    @staticmethod
+    def filter_when_getting(keyword, title, abstract):
         return True
+
+    @staticmethod
+    def filter_when_loading(keyword, title, abstract):
+        if ('机器人' in title) and ('故障' in title):
+            return True
+        return False
 
     def manual_filter(self, data):
         pass

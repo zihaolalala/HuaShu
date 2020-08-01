@@ -5,7 +5,7 @@
 # @File   : data_manager.py
 # @Desc   : 
 
-from knowledge_graph.data_management.jianshu_dataloader import JianShuDataLoader
+from knowledge_graph.data_management.dataloader_jianshu import JianShuDataLoader
 
 
 class RelationManager:

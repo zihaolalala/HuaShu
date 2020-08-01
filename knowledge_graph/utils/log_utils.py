@@ -7,11 +7,13 @@
 
 import logging
 import traceback
+import os
 
 # 设置日志文件
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-log_file = open('KnowledgeGraph.log', 'wt', encoding='utf-8')
+log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
+log_file = open(os.path.join(log_dir, 'KnowledgeGraph.log'), 'wt', encoding='utf-8')
 handler = logging.StreamHandler(log_file)
 handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -23,4 +25,8 @@ def log_print(content):
     s = traceback.extract_stack()
     call_file = s[-2][0][s[-2][0].rfind('HuaShu'):]
     print(content)
-    logger.info('{}: {}\n'.format(call_file, content))
+    logger.info('{}: {}'.format(call_file, content))
+
+
+def log_close():
+    log_file.close()
